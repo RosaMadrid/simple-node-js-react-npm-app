@@ -2,12 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node' // Asegúrate de tener esta herramienta configurada en Jenkins
-    }
-
-    environment {
-        IMAGE_NAME = 'simple-node-js-react-app'
-        IMAGE_TAG = 'latest'
+        nodejs "NodeJS_18"
     }
 
     stages {
@@ -16,41 +11,39 @@ pipeline {
                 git 'https://github.com/RosaMadrid/simple-node-js-react-npm-app.git'
             }
         }
-
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
+            }
+        }
+        stage('Build') {
+            steps {
                 sh 'npm run build'
             }
         }
-
         stage('Test') {
             steps {
                 sh 'npm test'
             }
         }
-
         stage('Docker Build') {
             steps {
-                sh 'docker --version' // Verifica si docker está accesible
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                sh 'docker build -t react-demo-app .'
             }
         }
-
-        stage('Deploy') {
+        stage('Docker Run') {
             steps {
-                sh 'docker run -d -p 3000:80 --name react-app $IMAGE_NAME:$IMAGE_TAG'
+                sh 'docker run -d -p 3000:3000 react-demo-app'
             }
         }
     }
 
     post {
         failure {
-            echo '❌ El despliegue falló.'
+            echo "❌ Algo falló en el pipeline"
         }
         success {
-            echo '✅ Despliegue realizado con éxito.'
+            echo "✅ Despliegue completo"
         }
     }
 }
-
